@@ -10,10 +10,12 @@ typedef struct __node_t {
 
 typedef struct __list_t {
     node_t *head;
+    pthread_mutex_t lock;
 } list_t;
 
 void init(list_t *);
 int insert(list_t *, int);
+int insertSorted(list_t *, int);
 int lookup(list_t *, int);
 int size(list_t *);
 

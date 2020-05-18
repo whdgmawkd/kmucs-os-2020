@@ -52,10 +52,10 @@ void *approximateCounterWorker(void *args) {
     return nullptr;
 }
 
-void approximateCounter(int threadCount) {
+void approximateCounter(int threadCount, int factor) {
     ApproximateCounter::counter_t counter;
-    ApproximateCounter::init(&counter, 1024);
-    printf("ApproximateCounter Test(%d)\n", threadCount);
+    ApproximateCounter::init(&counter, factor);
+    printf("ApproximateCounter Test(%d:%d)\n", threadCount, factor);
     double start = getSeconds();
     for (int i = 0; i < threadCount; i++) {
         pthread_create(threads + i, NULL, approximateCounterWorker, new pair<ApproximateCounter::counter_t *, int>(&counter, i));
@@ -141,13 +141,29 @@ void *lockCouplingWorker(void *args) {
     return nullptr;
 }
 
-void lockCoupling(int threadCount, int insertCount) {
+void *lockCouplingWorkerSorted(void *args) {
+    pair<LockCoupling::list_t *, pair<int, int>> *p = (pair<LockCoupling::list_t *, pair<int, int>> *)args;
+    LockCoupling::list_t *l = p->first;
+    int tid = p->second.first;
+    int insertCount = p->second.second;
+    int offset = insertCount * tid;
+#ifdef DEBUG
+    printf("Thread %d Started\n", tid);
+#endif
+    for (int i = 0; i < insertCount; i++) {
+        LockCoupling::insertSorted(l, offset + i);
+    }
+    return nullptr;
+}
+
+void lockCoupling(int threadCount, int insertCount, bool sorted) {
     LockCoupling::list_t l;
     LockCoupling::init(&l);
-    printf("LockCoupling Test(%d:%d)\n", threadCount, insertCount / threadCount * threadCount);
+    printf("LockCoupling Test(%d:%d:%s)\n", threadCount, insertCount / threadCount * threadCount, sorted ? "Sorted" : "Front");
+    void *(*worker)(void *) = sorted ? lockCouplingWorkerSorted : lockCouplingWorker;
     double start = getSeconds();
     for (int i = 0; i < threadCount; i++) {
-        pthread_create(threads + i, NULL, lockCouplingWorker, new pair<LockCoupling::list_t *, pair<int, int>>(&l, {i, insertCount / threadCount}));
+        pthread_create(threads + i, NULL, worker, new pair<LockCoupling::list_t *, pair<int, int>>(&l, {i, insertCount / threadCount}));
     }
     for (int i = 0; i < threadCount; i++) {
         pthread_join(threads[i], nullptr);
@@ -160,12 +176,17 @@ int main(int argc, char *argv[]) {
     for (int i = 1; i <= NUMCPUS; i++)
         lockCounter(i);
     for (int i = 1; i <= NUMCPUS; i++)
-        approximateCounter(i);
+        approximateCounter(i, 1024);
+    for (int i = 1; i <= NUMCPUS; i++)
+        approximateCounter(NUMCPUS, 1 << i);
     for (int i = 1; i <= NUMCPUS; i++)
         concurrentQueue(NUMCPUS, 1000000 * i);
     for (int i = 1; i <= NUMCPUS; i++)
         concurrentHashTable(NUMCPUS, 1000000 * i);
     for (int i = 1; i <= NUMCPUS; i++)
-        lockCoupling(NUMCPUS, 1000000 * i);
+        lockCoupling(NUMCPUS, 1000000 * i, false);
+    for (int i = 1; i <= NUMCPUS; i++) {
+        lockCoupling(NUMCPUS, 10000 * i, true);
+    }
     return 0;
 }
