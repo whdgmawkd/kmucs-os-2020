@@ -1,4 +1,4 @@
 build/
-**/*.o
-**/*.d
-**/a.out
+*.o
+*.d
+a.out
