@@ -3,7 +3,11 @@
 namespace LockCoupling {
 
 void init(list_t *l) {
-    l->head = nullptr;
+    // first is dummy node
+    l->head = (node_t *)malloc(sizeof(node_t));
+    pthread_mutex_init(&l->head->lock, NULL);
+    l->head->key = -1;
+    l->head->next = nullptr;
 }
 
 int insert(list_t *l, int key) {
@@ -11,13 +15,13 @@ int insert(list_t *l, int key) {
     if (newNode == nullptr) {
         return -1;
     }
+    // init node lock
+    pthread_mutex_init(&newNode->lock, NULL);
     newNode->key = key;
     pthread_mutex_lock(&l->head->lock);
-    pthread_mutex_lock(&newNode->lock);
-    newNode->next = l->head;
-    l->head = newNode;
-    pthread_mutex_unlock(&newNode->lock);
-    pthread_mutex_unlock(&l->head->next->lock);
+    newNode->next = l->head->next;
+    l->head->next = newNode;
+    pthread_mutex_unlock(&l->head->lock);
     return 0;
 }
 
@@ -34,6 +38,16 @@ int lookup(list_t *l, int key) {
         cur = cur->next;
     }
     return rv;
+}
+
+int size(list_t *l) {
+    int cnt = -1;
+    node_t *cur = l->head;
+    while (cur) {
+        cnt++;
+        cur = cur->next;
+    }
+    return cnt;
 }
 
 } // namespace LockCoupling

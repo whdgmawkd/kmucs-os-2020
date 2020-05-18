@@ -22,14 +22,14 @@ void enqueue(queue_t *q, int value) {
 }
 
 int dequeue(queue_t *q, int *value) {
-    pthread_mutex_lock(&q->headLock);
     node_t *tmp = q->head;
     node_t *newHead = tmp->next;
     if (newHead == nullptr) {
-        pthread_mutex_unlock(&q->headLock);
+
         return -1;
     }
     *value = newHead->value;
+    pthread_mutex_unlock(&q->headLock);
     q->head = newHead;
     pthread_mutex_unlock(&q->headLock);
     free(tmp);

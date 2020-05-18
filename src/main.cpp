@@ -5,6 +5,7 @@
 #include "concurrentHashTable.hpp"
 #include "concurrentQueue.hpp"
 #include "lockCounter.hpp"
+#include "lockCoupling.hpp"
 #include "threadCommon.hpp"
 
 using namespace std;
@@ -91,7 +92,8 @@ void concurrentQueue(int threadCount, int insertCount) {
     for (int i = 0; i < threadCount; i++) {
         pthread_join(threads[i], nullptr);
     }
-    printf("ConcurrentQueue Result : %d, Time %lf\n", ConcurrentQueue::size(&queue), getSeconds() - start);
+    double end = getSeconds();
+    printf("ConcurrentQueue Result : %d, Time : %lf\n", ConcurrentQueue::size(&queue), end - start);
 }
 
 void *concurrentHashTableWorker(void *args) {
@@ -120,7 +122,38 @@ void concurrentHashTable(int threadCount, int insertCount) {
     for (int i = 0; i < threadCount; i++) {
         pthread_join(threads[i], nullptr);
     }
-    printf("ConcurrentHashTable Result : %d, Time %lf\n", ConcurrentHashTable::size(&hash), getSeconds() - start);
+    double end = getSeconds();
+    printf("ConcurrentHashTable Result : %d, Time : %lf\n", ConcurrentHashTable::size(&hash), end - start);
+}
+
+void *lockCouplingWorker(void *args) {
+    pair<LockCoupling::list_t *, pair<int, int>> *p = (pair<LockCoupling::list_t *, pair<int, int>> *)args;
+    LockCoupling::list_t *l = p->first;
+    int tid = p->second.first;
+    int insertCount = p->second.second;
+    int offset = insertCount * tid;
+#ifdef DEBUG
+    printf("Thread %d Started\n", tid);
+#endif
+    for (int i = 0; i < insertCount; i++) {
+        LockCoupling::insert(l, offset + i);
+    }
+    return nullptr;
+}
+
+void lockCoupling(int threadCount, int insertCount) {
+    LockCoupling::list_t l;
+    LockCoupling::init(&l);
+    printf("LockCoupling Test(%d:%d)\n", threadCount, insertCount / threadCount * threadCount);
+    double start = getSeconds();
+    for (int i = 0; i < threadCount; i++) {
+        pthread_create(threads + i, NULL, lockCouplingWorker, new pair<LockCoupling::list_t *, pair<int, int>>(&l, {i, insertCount / threadCount}));
+    }
+    for (int i = 0; i < threadCount; i++) {
+        pthread_join(threads[i], nullptr);
+    }
+    double end = getSeconds();
+    printf("LockCoupling Result : %d, Time : %lf\n", LockCoupling::size(&l), end - start);
 }
 
 int main(int argc, char *argv[]) {
@@ -130,8 +163,9 @@ int main(int argc, char *argv[]) {
         approximateCounter(i);
     for (int i = 1; i <= NUMCPUS; i++)
         concurrentQueue(NUMCPUS, 1000000 * i);
-    for (int i = 1; i <= NUMCPUS; i++) {
+    for (int i = 1; i <= NUMCPUS; i++)
         concurrentHashTable(NUMCPUS, 1000000 * i);
-    }
+    for (int i = 1; i <= NUMCPUS; i++)
+        lockCoupling(NUMCPUS, 1000000 * i);
     return 0;
 }
