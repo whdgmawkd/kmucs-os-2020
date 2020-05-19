@@ -4,9 +4,10 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include <cstdlib>
+#include <cstdio>
 
 double getSeconds();
 
-const int NUMCPUS = 12; // 6C12T
+const int NUMCPUS = 48; // 6C12T force 48T
 
 #endif

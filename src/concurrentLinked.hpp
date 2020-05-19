@@ -17,8 +17,10 @@ typedef struct __list_t {
 
 void init(list_t *);
 int insert(list_t *, int);
+int insertSorted(list_t *, int);
 int lookup(list_t *, int);
 int size(list_t *);
+int del(list_t *);
 
 } // namespace ConcurrentLinked
 

@@ -5,6 +5,7 @@ namespace ConcurrentQueue {
 void init(queue_t *q) {
     node_t *tmp = (node_t *)malloc(sizeof(node_t));
     tmp->next = nullptr;
+    tmp->value = -1;
     q->head = q->tail = tmp;
     pthread_mutex_init(&q->headLock, NULL);
     pthread_mutex_init(&q->tailLock, NULL);
@@ -44,6 +45,18 @@ int size(queue_t *q) {
         cur = cur->next;
     }
     return count;
+}
+
+int del(queue_t *q){
+    node_t *cur = q->head;
+    int cnt = 0;
+    while(cur){
+        node_t *delNode = cur;
+        cur=cur->next;
+        free(delNode);
+        cnt++;
+    }
+    return cnt;
 }
 
 } // namespace ConcurrentQueue

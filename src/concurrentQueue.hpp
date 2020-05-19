@@ -20,6 +20,8 @@ void init(queue_t *);
 void enqueue(queue_t *, int);
 int dequeue(queue_t *, int *);
 int size(queue_t *);
+int del(queue_t *);
+
 } // namespace ConcurrentQueue
 
 #endif
