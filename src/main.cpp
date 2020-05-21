@@ -169,7 +169,7 @@ void lockCoupling(int threadCount, int insertCount, bool sorted) {
 
 int main(int argc, char *argv[]) {
 
-    file.open("output.txt", ios::out | ios::trunc);
+    file.open("output12T.txt", ios::out | ios::trunc);
     if (!file.is_open()) {
         return -1;
     }
