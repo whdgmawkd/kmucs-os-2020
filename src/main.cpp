@@ -201,33 +201,33 @@ void concurrentLinked(int threadCount, int insertCount, fstream &file) {
 int main(int argc, char *argv[]) {
 
     fstream figure295, figure296, figure2911;
-    // figure295.open("figure295.csv", ios::out | ios::trunc);
-    // figure296.open("figure296.csv", ios::out | ios::trunc);
+    figure295.open("figure295.csv", ios::out | ios::trunc);
+    figure296.open("figure296.csv", ios::out | ios::trunc);
     figure2911.open("figure2911.csv", ios::out | ios::trunc);
 
-    // figure295 << "type, threadCount, insertCount, time, threshold" << endl;
-    // figure296 << "type, threadCount, insertCount, time, threshold" << endl;
+    figure295 << "type, threadCount, insertCount, time, threshold" << endl;
+    figure296 << "type, threadCount, insertCount, time, threshold" << endl;
     figure2911 << "type, threadCount, insertCount, time" << endl;
 
     // // figure 29.5
-    // for (int loop = 0; loop < 5; loop++) {
-    //     for (int i = 1; i <= NUMCPUS; i++) {
-    //         lockCounter(i, figure295);
-    //         approximateCounter(i, 1024, figure295);
-    //     }
-    // }
-    // // figure 29.6
-    // for (int loop = 0; loop < 5; loop++) {
-    //     for (int j = 0; j < 31; j++) {
-    //         approximateCounter(48, 1 << j, figure296);
-    //         approximateCounter(24, 1 << j, figure296);
-    //         approximateCounter(12, 1 << j, figure296);
-    //         approximateCounter(6, 1 << j, figure296);
-    //     }
-    // }
+    for (int loop = 0; loop < 5; loop++) {
+        for (int i = 1; i <= NUMCPUS; i++) {
+            lockCounter(i, figure295);
+            approximateCounter(i, 1024, figure295);
+        }
+    }
+    // figure 29.6
+    for (int loop = 0; loop < 5; loop++) {
+        for (int j = 0; j < 31; j++) {
+            approximateCounter(48, 1 << j, figure296);
+            approximateCounter(24, 1 << j, figure296);
+            approximateCounter(12, 1 << j, figure296);
+            approximateCounter(6, 1 << j, figure296);
+        }
+    }
     //figure 29.11
     for (int loop = 0; loop < 5; loop++) {
-        for (int i = 1; i <= 12; i++) {
+        for (int i = 1; i <= 20; i++) {
             // concurrent queue
             concurrentQueue(12, 10000 * i, figure2911);
             // lock coupling
@@ -237,7 +237,7 @@ int main(int argc, char *argv[]) {
             // concurreht hash table
             concurrentHashTable(12, 10000 * i, figure2911);
         }
-        for (int i = 1; i <= NUMCPUS; i++) {
+        for (int i = 1; i <= 20; i++) {
             // concurrent queue
             concurrentQueue(NUMCPUS, 10000 * i, figure2911);
             // lock coupling
@@ -248,8 +248,8 @@ int main(int argc, char *argv[]) {
             concurrentHashTable(NUMCPUS, 10000 * i, figure2911);
         }
     }
-    // figure295.close();
-    // figure296.close();
+    figure295.close();
+    figure296.close();
     figure2911.close();
     return 0;
 }
