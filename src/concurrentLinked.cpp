@@ -20,29 +20,6 @@ int insert(list_t *l, int key) {
     return 0;
 }
 
-int insertSorted(list_t *l, int key) {
-    node_t *newNode = (node_t *)malloc(sizeof(node_t));
-    if (newNode == nullptr) {
-        return -1;
-    }
-    if (l->head == nullptr) {
-        return insert(l, key);
-    }
-    newNode->key = key;
-    pthread_mutex_lock(&l->lock);
-    node_t *cur = l->head;
-    while (cur) {
-        if (cur->next == nullptr || (cur->key < key && cur->next->key >= key)) {
-            newNode->next = cur->next;
-            cur->next = newNode;
-            break;
-        }
-        cur = cur->next;
-    }
-    pthread_mutex_unlock(&l->lock);
-    return 0;
-} // namespace ConcurrentLinked
-
 int lookup(list_t *l, int key) {
     int rv = -1;
     pthread_mutex_lock(&l->lock);
@@ -56,16 +33,6 @@ int lookup(list_t *l, int key) {
     }
     pthread_mutex_unlock(&l->lock);
     return rv;
-}
-
-int size(list_t *l) {
-    int count = 0;
-    node_t *cur = l->head;
-    while (cur) {
-        count++;
-        cur = cur->next;
-    }
-    return count;
 }
 
 int del(list_t *l) {

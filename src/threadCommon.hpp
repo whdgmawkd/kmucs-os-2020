@@ -8,6 +8,6 @@
 
 double getSeconds();
 
-const int NUMCPUS = 12; // 6C12T force 48T
+const int NUMCPUS = 48; // 6C12T force 48T
 
 #endif

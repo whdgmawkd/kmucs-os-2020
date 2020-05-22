@@ -3,12 +3,14 @@
 namespace LockCoupling {
 
 void init(list_t *l) {
-    // first is dummy node
+    // first is dummy node, second is dummy node
+    node_t *tailNode = (node_t *)malloc(sizeof(node_t));
+    tailNode->next = nullptr;
+    pthread_mutex_init(&tailNode->lock, NULL);
     l->head = (node_t *)malloc(sizeof(node_t));
     pthread_mutex_init(&l->head->lock, NULL);
-    pthread_mutex_init(&l->lock, NULL);
     l->head->key = -1;
-    l->head->next = nullptr;
+    l->head->next = tailNode;
 }
 
 int insert(list_t *l, int key) {
@@ -16,49 +18,14 @@ int insert(list_t *l, int key) {
     if (newNode == nullptr) {
         return -1;
     }
-    // init node lock
     pthread_mutex_init(&newNode->lock, NULL);
     newNode->key = key;
     pthread_mutex_lock(&l->head->lock);
+    pthread_mutex_lock(&l->head->next->lock);
     newNode->next = l->head->next;
     l->head->next = newNode;
     pthread_mutex_unlock(&l->head->lock);
-    return 0;
-}
-
-int insertSorted(list_t *l, int key) {
-    node_t *newNode = (node_t *)malloc(sizeof(node_t));
-    if (newNode == nullptr) {
-        return -1;
-    }
-    pthread_mutex_init(&newNode->lock, NULL);
-    newNode->key = key;
-    pthread_mutex_lock(&l->lock);
-    node_t *prev = l->head;
-    node_t *cur = l->head->next;
-    pthread_mutex_lock(&prev->lock);
-    pthread_mutex_unlock(&l->lock);
-    if (cur) {
-        pthread_mutex_lock(&cur->lock);
-    }
-    while (cur) {
-        if (cur->key > key) {
-            break;
-        }
-        node_t *temp = prev;
-        prev = cur;
-        cur = cur->next;
-        pthread_mutex_unlock(&temp->lock);
-        if (cur) {
-            pthread_mutex_lock(&cur->lock);
-        }
-    }
-    newNode->next = cur;
-    prev->next = newNode;
-    pthread_mutex_unlock(&prev->lock);
-    if (cur) {
-        pthread_mutex_unlock(&cur->lock);
-    }
+    pthread_mutex_unlock(&newNode->next->lock);
     return 0;
 }
 
@@ -85,16 +52,6 @@ int lookup(list_t *l, int key) {
         cur = cur->next;
     }
     return rv;
-}
-
-int size(list_t *l) {
-    int cnt = -1;
-    node_t *cur = l->head;
-    while (cur) {
-        cnt++;
-        cur = cur->next;
-    }
-    return cnt;
 }
 
 int del(list_t *l) {

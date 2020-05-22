@@ -36,17 +36,6 @@ int dequeue(queue_t *q, int *value) {
     free(tmp);
     return 0;
 }
-
-int size(queue_t *q) {
-    int count = -1;
-    node_t *cur = q->head;
-    while (cur) {
-        count++;
-        cur = cur->next;
-    }
-    return count;
-}
-
 int del(queue_t *q){
     node_t *cur = q->head;
     int cnt = 0;

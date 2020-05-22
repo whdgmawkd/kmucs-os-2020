@@ -13,13 +13,11 @@ typedef struct __queue_t {
     node_t *head;
     node_t *tail;
     pthread_mutex_t headLock, tailLock;
-    int size;
 } queue_t;
 
 void init(queue_t *);
 void enqueue(queue_t *, int);
 int dequeue(queue_t *, int *);
-int size(queue_t *);
 int del(queue_t *);
 
 } // namespace ConcurrentQueue

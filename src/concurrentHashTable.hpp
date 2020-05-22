@@ -14,9 +14,7 @@ typedef struct __hash_t {
 
 void init(hash_t *);
 int insert(hash_t *, int);
-int insertSorted(hash_t *, int);
 int lookup(hash_t *, int);
-int size(hash_t *);
 int del(hash_t *);
 
 } // namespace ConcurrentHashTable
